@@ -1,0 +1,64 @@
+{
+  "name": "micropython-panel",
+  "displayName": "MicroPython Panel",
+  "publisher": "JanChaloupek",
+  "version": "0.1.15",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JanChaloupek/micropython-panel.git"
+  },
+
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+
+  "main": "./src/extension.js",
+
+  "activationEvents": [
+    "workspaceContains:**/main.py",
+    "workspaceContains:**/code.py",
+    "workspaceContains:**/boot.py",
+    "workspaceContains:**/.vscode/upload.ps1",
+    "workspaceContains:**/.vscode/list.ps1",
+    "workspaceContains:**/.vscode/wipe.ps1",
+    "onCommand:micropython.openPanel",
+    "onCommand:micropython.showCommands"
+  ],
+
+  "contributes": {
+    "commands": [
+      {
+        "command": "micropython.openPanel",
+        "title": "MicroPython: Open Panel"
+      },
+      {
+        "command": "micropython.showCommands",
+        "title": "MicroPython: Commands"
+      }
+    ],
+
+    "configuration": {
+      "title": "MicroPython Panel Settings",
+      "properties": {
+        "micropython.enableStatusToolbar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MicroPython status bar toolbar"
+        },
+
+        "micropython.autoOpenPanel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically reopen the panel if it was open last time"
+        },
+
+        "micropython.commands": {
+          "type": "array",
+          "description": "List of MicroPython toolbar commands",
+          "default": []
+        }
+      }
+    }
+  }
+}

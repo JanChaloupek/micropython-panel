@@ -1,0 +1,9 @@
+.git/
+.vscode/
+.gitignore
+test/
+**/*.map
+**/*.ts
+*.cmd
+*.vsix
+BUILDING_VSIX.md
