@@ -40,6 +40,16 @@ function ensureTerminal() {
  * @param {vscode.OutputChannel} out - výstupní log kanál
  */
 function registerDynamicCommands(context, commands, out) {
+    // Ošetření zavření terminálu uživatelem (ikona koše v panelu terminálů)
+    context.subscriptions.push(
+        vscode.window.onDidCloseTerminal(closedTerm => {
+            if (closedTerm === term) {
+                term = null;
+                logger.info(out, "MicroPython terminal closed by user → reference cleared.");
+            }
+        })
+    );
+
     if (!commands?.length) {
         logger.warn(out, "No commands configured → dynamic commands not registered.");
         return;

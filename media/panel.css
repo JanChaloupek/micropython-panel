@@ -1,31 +1,35 @@
-/* Základní styl stránky */
+/* Základní styl stránky — adaptuje se na téma VS Code */
 body {
-    background: #1e1e1e;
-    color: white;
+    background: var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e));
+    color: var(--vscode-sideBar-foreground, var(--vscode-editor-foreground, white));
     padding: 10px;
-    font-family: sans-serif;
+    font-family: var(--vscode-font-family, sans-serif);
+    font-size: var(--vscode-font-size, 13px);
 }
 
 /* Toolbar s tlačítky */
 #toolbar {
     display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-direction: column;
 }
 
 /* Tlačítka příkazů */
 button {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border: none;
     cursor: pointer;
     font-weight: bold;
     border-radius: 4px;
+    width: 100%;
+    text-align: left;
+    font-size: 13px;
 
-    background-color: var(--btn-color, #333);
-    color: black;
+    background-color: var(--btn-color, var(--vscode-button-secondaryBackground, #333));
+    color: var(--vscode-button-secondaryForeground, black);
 }
 
 button:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.15);
+    outline: 1px solid var(--vscode-focusBorder, #007acc);
 }

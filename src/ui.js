@@ -144,8 +144,11 @@ function openPanel(context, commands, out, existingPanel = null) {
         }
 
         if (msg.command) {
-            logger.info(out, `Webview requested command execution: ${msg.command}`);
-            vscode.commands.executeCommand(msg.command);
+            const targetCmd = msg.command.startsWith("micropython.")
+                ? msg.command
+                : `micropython.runCommand.${msg.command}`;
+            logger.info(out, `Webview requested command execution: ${targetCmd}`);
+            vscode.commands.executeCommand(targetCmd);
             return;
         }
     });
@@ -153,4 +156,83 @@ function openPanel(context, commands, out, existingPanel = null) {
     logger.info(out, existingPanel ? "Panel restored from previous session." : "Panel opened.");
 }
 
-module.exports = { createStatusButtons, openPanel };
+/**
+ * WebviewViewProvider pro zobrazení MicroPython panelu v postranní liště (Sidebar).
+ *
+ * Na rozdíl od WebviewPanel (záložka v editoru) je Sidebar View:
+ *  - vždy viditelný a snadno přístupný přes ikonu v Activity Baru
+ *  - nezabírá místo v editoru
+ *  - není potřeba řešit obnovu po restartu (VS Code ho obnovuje automaticky)
+ *
+ * Webview obsah je stejný jako u klasického panelu (panel.html + panel.css + panel.js).
+ */
+class MicroPythonSidebarProvider {
+    /**
+     * @param {vscode.ExtensionContext} context - kontext rozšíření
+     * @param {Array<Object>} commands - seznam příkazů z nastavení
+     * @param {vscode.OutputChannel} out - výstupní log kanál
+     */
+    constructor(context, commands, out) {
+        this._context = context;
+        this._commands = commands;
+        this._out = out;
+    }
+
+    /**
+     * Vyvolá se automaticky, když VS Code zobrazí sidebar view.
+     *
+     * @param {vscode.WebviewView} webviewView - instance sidebar view
+     */
+    resolveWebviewView(webviewView) {
+        this._view = webviewView;
+
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.joinPath(this._context.extensionUri, 'media')]
+        };
+
+        // Načtení HTML šablony
+        const htmlPath = path.join(this._context.extensionPath, 'media', 'panel.html');
+        let html = fs.readFileSync(htmlPath, 'utf8');
+
+        // Cesty k CSS a JS
+        const cssUri = webviewView.webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'panel.css')
+        );
+        const jsUri = webviewView.webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'panel.js')
+        );
+
+        html = html.replace('{{CSS}}', cssUri.toString());
+        html = html.replace('{{JS}}', jsUri.toString());
+
+        webviewView.webview.html = html;
+
+        // Listener pro zprávy ze sidebar webview
+        webviewView.webview.onDidReceiveMessage(msg => {
+            if (msg.log) {
+                logger.info(this._out, msg.log.message, msg.log.data ?? "");
+                return;
+            }
+
+            if (msg.ready) {
+                logger.info(this._out, "Sidebar webview is ready → sending commands");
+                webviewView.webview.postMessage({ commands: this._commands });
+                return;
+            }
+
+            if (msg.command) {
+                const targetCmd = msg.command.startsWith("micropython.")
+                    ? msg.command
+                    : `micropython.runCommand.${msg.command}`;
+                logger.info(this._out, `Sidebar requested command execution: ${targetCmd}`);
+                vscode.commands.executeCommand(targetCmd);
+                return;
+            }
+        });
+
+        logger.info(this._out, "Sidebar panel resolved.");
+    }
+}
+
+module.exports = { createStatusButtons, openPanel, MicroPythonSidebarProvider };

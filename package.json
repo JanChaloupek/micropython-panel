@@ -2,7 +2,7 @@
   "name": "micropython-panel",
   "displayName": "MicroPython Panel",
   "publisher": "JanChaloupek",
-  "version": "0.1.15",
+  "version": "0.2.0",
 
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
     "workspaceContains:**/.vscode/list.ps1",
     "workspaceContains:**/.vscode/wipe.ps1",
     "onCommand:micropython.openPanel",
-    "onCommand:micropython.showCommands"
+    "onCommand:micropython.showCommands",
+    "onView:micropython.sidebarPanel"
   ],
 
   "contributes": {
@@ -37,6 +38,26 @@
         "title": "MicroPython: Commands"
       }
     ],
+
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "micropython",
+          "title": "MicroPython",
+          "icon": "media/micropython-icon.svg"
+        }
+      ]
+    },
+
+    "views": {
+      "micropython": [
+        {
+          "type": "webview",
+          "id": "micropython.sidebarPanel",
+          "name": "Panel"
+        }
+      ]
+    },
 
     "configuration": {
       "title": "MicroPython Panel Settings",

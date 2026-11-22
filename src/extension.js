@@ -3,7 +3,7 @@ const vscode = require('vscode');
 const { logger } = require('./logging');
 const { getSetting } = require('./settings');
 const { registerDynamicCommands } = require('./commands');
-const { createStatusButtons, openPanel } = require('./ui');
+const { createStatusButtons, openPanel, MicroPythonSidebarProvider } = require('./ui');
 
 let restoredPanel = null; // sem si serializer uloží panel 
 
@@ -80,10 +80,37 @@ async function activate(context) {
     // 7) Obnova panelu z minulé relace — bezpečně, bez závodních podmínek
     waitForSerializerAndRestore(context, commands, out);
 
-    // 8) Registrace příkazu pro otevření panelu
+    // 8) Sidebar panel (Activity Bar)
+    const sidebarProvider = new MicroPythonSidebarProvider(context, commands, out);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider("micropython.sidebarPanel", sidebarProvider)
+    );
+
+    // 9) Registrace příkazu pro otevření panelu (záložka v editoru — zachováno pro zpětnou kompatibilitu)
     context.subscriptions.push(
         vscode.commands.registerCommand("micropython.openPanel", () => {
             openPanel(context, commands, out);
+        })
+    );
+
+    // 10) Registrace příkazu pro rychlé menu (Command Palette → MicroPython: Commands)
+    context.subscriptions.push(
+        vscode.commands.registerCommand("micropython.showCommands", async () => {
+            if (!commands?.length) {
+                vscode.window.showWarningMessage("MicroPython: Žádné příkazy nejsou nakonfigurovány.");
+                return;
+            }
+            const items = commands.map(cmd => ({
+                label: cmd.name,
+                description: cmd.command,
+                commandId: `micropython.runCommand.${cmd.id}`
+            }));
+            const selected = await vscode.window.showQuickPick(items, {
+                placeHolder: "Vyberte MicroPython příkaz…"
+            });
+            if (selected) {
+                vscode.commands.executeCommand(selected.commandId);
+            }
         })
     );
 
