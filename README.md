@@ -153,6 +153,12 @@ micropython-panel/
 
 ## 📋 Changelog
 
+### 0.2.2 (2026-11-22)
+
+**Design a čitelnost tlačítek:**
+- 🎨 **Nový elegantní styl tlačítek v panelu** — odstraněno křiklavé celoplošné podbarvení tlačítek, které způsobovalo špatnou čitelnost textu.
+- 🔤 Tlačítka mají nyní tmavý podklad sladěný s VS Code, **výrazný barevný text** (odpovídající barvám ve spodní liště) a **barevný levý indikační proužek** pro okamžitou orientaci.
+
 ### 0.2.1 (2026-11-22)
 
 **Vylepšení:**
