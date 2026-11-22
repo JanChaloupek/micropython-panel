@@ -153,6 +153,12 @@ micropython-panel/
 
 ## 📋 Changelog
 
+### 0.2.1 (2026-11-22)
+
+**Vylepšení:**
+- 🛡️ **Automatické výchozí příkazy (Out-of-the-box)** — pokud projekt nebo uživatel nemá definované vlastní `micropython.commands`, rozšíření automaticky nabídne výchozí sadu příkazů (Upload, REPL, List files, Wipe device). Už nikdy se nezobrazí prázdný panel s chybou.
+- 🔧 Opravena prázdná konfigurace v `3-MicroPython.code-workspace`.
+
 ### 0.2.0 (2026-11-22)
 
 **Nové funkce:**

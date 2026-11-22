@@ -5,6 +5,37 @@ const path = require("path");
 const { logger } = require("./logging");
 
 /**
+ * Výchozí příkazy pro MicroPython, pokud uživatel nemá nakonfigurované vlastní.
+ * Zajišťuje funkčnost tlačítek "out-of-the-box" v libovolném MicroPython projektu.
+ */
+const DEFAULT_COMMANDS = [
+    {
+        id: "upload",
+        name: "⬆ Upload project",
+        command: "powershell -ExecutionPolicy Bypass -File .vscode/upload.ps1",
+        color: "yellow"
+    },
+    {
+        id: "repl",
+        name: "▶ REPL",
+        command: "powershell -ExecutionPolicy Bypass -File .vscode/repl.ps1",
+        color: "lightgreen"
+    },
+    {
+        id: "list",
+        name: "📂 List files",
+        command: "powershell -ExecutionPolicy Bypass -File .vscode/list.ps1",
+        color: "lightblue"
+    },
+    {
+        id: "wipe",
+        name: "🗑 Wipe device",
+        command: "powershell -ExecutionPolicy Bypass -File .vscode/wipe.ps1",
+        color: "red"
+    }
+];
+
+/**
  * Sanitizuje JSON řetězec tak, aby byl bezpečně parsovatelný.
  *
  * Odstraňuje:
@@ -145,6 +176,14 @@ function getSetting(settingName, out) {
     if (inspected && isNonEmpty(inspected.defaultValue)) {
         logger.info(out, `Using ${settingName} from DEFAULT settings`);
         return inspected.defaultValue;
+    }
+
+    // ------------------------------------------------------------
+    // 5) Automatický fallback na výchozí příkazy (out-of-the-box)
+    // ------------------------------------------------------------
+    if (settingName === "commands") {
+        logger.info(out, "No custom commands configured → using built-in default commands");
+        return DEFAULT_COMMANDS;
     }
 
     logger.warn(out, `No non-empty value found for '${settingName}'`);
