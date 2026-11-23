@@ -94,8 +94,8 @@ Příkazy se definují v `.vscode/settings.json` projektu:
 ### Pro studenty (z připraveného projektu)
 
 1. Otevřete MicroPython projekt ve VS Code
-2. Spusťte `.vscode/setup.bat`
-3. Hotovo — rozšíření se nainstaluje automaticky
+2. Dvakrát klikněte na **`setup-MicroPython.bat`** (nebo `setup-CircuitPython.bat` pro desky s CircuitPythonem)
+3. Hotovo — automaticky se zkontroluje Python, nainstalují všechny potřebné knihovny, MicroPython Panel i všechna doporučená rozšíření z Marketplace
 
 ### Ruční instalace ze souboru VSIX
 
