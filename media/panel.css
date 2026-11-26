@@ -9,23 +9,199 @@ body {
     box-sizing: border-box;
 }
 
-/* Toolbar s tlačítky */
+/* ---------- Záhlaví „Desky ↻“ ---------- */
+
+#devices {
+    margin-bottom: 8px;
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.85;
+}
+
+.header-state {
+    flex: 1;
+    text-align: right;
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.icon-button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.icon-button:hover {
+    background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.2));
+}
+
+/* ---------- Bloky platforem ---------- */
+
 #toolbar {
     display: flex;
-    gap: 8px;
     flex-direction: column;
+    gap: 12px;
     width: 100%;
 }
 
-/* Tlačítka příkazů:
-   - Tmavé pozadí ladící s tématem VS Code
-   - Výrazný barevný text podle barvy akce (stejně jako ve status baru)
-   - Barevný levý akcentní proužek pro rychlou orientaci
-*/
-button {
+/* Barvy platforem (proužek bloku a název) */
+.platform-micropython   { --platform-color: #6fd08c; }
+.platform-circuitpython { --platform-color: #c39bff; }
+
+.block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-left: 4px solid var(--platform-color, var(--vscode-button-background, #007acc));
+    background-color: rgba(128, 128, 128, 0.06);
+    transition: opacity 0.15s ease;
+}
+
+.block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.block-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--platform-color, inherit);
+}
+
+.block-state {
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+.block-device {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.block-device.selectable {
+    cursor: pointer;
+    padding: 3px 6px;
+    margin: -1px -6px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.block-device.selectable:hover {
+    background-color: rgba(128, 128, 128, 0.15);
+}
+
+.block-device.is-active {
+    background-color: rgba(128, 128, 128, 0.08);
+}
+
+.device-radio {
+    font-size: 13px;
+    line-height: 1;
+    color: var(--platform-color, #6fd08c);
+    user-select: none;
+}
+
+.device-dot {
+    font-size: 10px;
+    line-height: 1;
+    color: var(--platform-color, #6fd08c);
+    opacity: 0.9;
+    user-select: none;
+}
+
+.device-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background-color: rgba(128, 128, 128, 0.2);
+    color: var(--platform-color, inherit);
+    margin-left: auto;
+    font-weight: 600;
+}
+
+.where {
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-weight: 600;
+}
+
+.device-name {
+    opacity: 0.85;
+    overflow-wrap: anywhere;
+}
+
+.device-sub {
+    overflow-wrap: anywhere;
+}
+
+/* Blok bez připojené desky: ztlumený, ale tlačítka fungují dál */
+.block.inactive {
+    opacity: 0.5;
+}
+
+.block.inactive:hover {
+    opacity: 0.8;
+}
+
+/* ---------- Texty ---------- */
+
+.hint {
+    opacity: 0.8;
+    margin: 2px 0;
+}
+
+.notice {
+    line-height: 1.45;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border-left: 4px solid var(--vscode-editorInfo-foreground, #3794ff);
+    background-color: var(--vscode-button-secondaryBackground, #252526);
+}
+
+.small {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.warn  { color: var(--vscode-editorWarning-foreground, #cca700); }
+.error { color: var(--vscode-errorForeground, #f48771); }
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+/* ---------- Tlačítka ---------- */
+
+/* Tmavý podklad sladěný s VS Code, barevný text a levý proužek podle akce */
+.command {
     display: flex;
     align-items: center;
-    padding: 9px 14px;
+    padding: 8px 12px;
     border-radius: 4px;
     width: 100%;
     text-align: left;
@@ -33,28 +209,27 @@ button {
     font-weight: 600;
     cursor: pointer;
     box-sizing: border-box;
-
-    /* Tmavý podklad sladěný s VS Code, nikoli plně zalitý barvou */
     background-color: var(--vscode-button-secondaryBackground, #252526);
     border: 1px solid rgba(255, 255, 255, 0.08);
-
-    /* Barevný levý indikátor */
     border-left: 4px solid var(--btn-color, var(--vscode-button-background, #007acc));
-
-    /* Výrazná barva textu odpovídající barvě ve spodní liště */
     color: var(--btn-color, var(--vscode-button-secondaryForeground, #ffffff));
-
     transition: background-color 0.15s ease, border-left-width 0.15s ease, transform 0.1s ease;
 }
 
-button:hover {
+.command:hover {
     background-color: var(--vscode-button-secondaryHoverBackground, #2e2e2e);
     border-left-width: 6px;
     filter: brightness(1.15);
     outline: none;
 }
 
-button:active {
+/* Nevratná akce (pole confirm): odsazená od běžných tlačítek */
+.command.danger {
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.command:active {
     transform: scale(0.98);
     filter: brightness(0.9);
 }

@@ -33,29 +33,23 @@ vsce package
 
 Výsledkem bude soubor: `micropython-panel-<verze>.vsix`
 
-## 1.2 Nakopírování posledního buildu do MicroPython projektu
+## 1.2 Nakopírování posledního buildu do startovacího projektu
 Použij skript: `copyToMicroPythonProject.cmd`
 
 Ten:
-- najde poslední vytvořený .vsix
-- zkopíruje ho do MicroPython projektu (typicky do `.vscode/dist/` nebo kam potřebuješ)
+- najde poslední vytvořený .vsix v kořeni rozšíření
+- zkopíruje ho do startovacího projektu kurzu jako
+  `..\_vsc_init_circuitPythonProject\.vscode\dist\micropython-panel.vsix`
+  (odtud ho instaluje setup)
 
-## 1.3 Instalace závislostí v MicroPython projektu
+## 1.3 Instalace ve startovacím projektu
 
-V MicroPython projektu spusť: 
-```powershell
-.vscode/setup.bat
-```
+Ve startovacím projektu spusť `setup.bat` (Linux / macOS: `./setup.sh`). Ten spustí `.vscode/setup.ps1` (`.vscode/setup.sh`), který:
+- nainstaluje Python knihovny (`mpremote`, `matplotlib`)
+- nainstaluje tento panel z `.vscode/dist/micropython-panel.vsix` a další rozšíření
+- zapíše tlačítka panelu a Run on Save do `.vscode/settings.json` (`python .vscode/deska.py vscode`)
 
-Ten spustí: 
-```powershell
-.vscode/setup.ps1
-```
-
-A ten:
-- nainstaluje potřebné nástroje
-- nainstaluje rozšíření
-- připraví prostředí pro studenty
+Rychlejší cesta jen pro panel: `code --install-extension micropython-panel-<verze>.vsix --force` a ve VS Code `F1` → `Developer: Reload Window`.
 
 
 # 2. 🧰 Instalace potřebného software (čistý Windows)

@@ -5,35 +5,56 @@ const path = require("path");
 const { logger } = require("./logging");
 
 /**
- * Výchozí příkazy pro MicroPython, pokud uživatel nemá nakonfigurované vlastní.
- * Zajišťuje funkčnost tlačítek "out-of-the-box" v libovolném MicroPython projektu.
+ * Najde v otevřených složkách nástroj `.vscode/deska.py`
+ * (projekty kurzu – MicroPython i CircuitPython v jednom souboru).
+ *
+ * @returns {string|null} - cesta ke složce projektu, nebo null
  */
-const DEFAULT_COMMANDS = [
-    {
-        id: "upload",
-        name: "⬆ Upload project",
-        command: "powershell -ExecutionPolicy Bypass -File .vscode/upload.ps1",
-        color: "yellow"
-    },
-    {
-        id: "repl",
-        name: "▶ REPL",
-        command: "powershell -ExecutionPolicy Bypass -File .vscode/repl.ps1",
-        color: "lightgreen"
-    },
-    {
-        id: "list",
-        name: "📂 List files",
-        command: "powershell -ExecutionPolicy Bypass -File .vscode/list.ps1",
-        color: "lightblue"
-    },
-    {
-        id: "wipe",
-        name: "🗑 Wipe device",
-        command: "powershell -ExecutionPolicy Bypass -File .vscode/wipe.ps1",
-        color: "red"
+function findDeskaProject() {
+    for (const folder of vscode.workspace.workspaceFolders || []) {
+        if (fs.existsSync(path.join(folder.uri.fsPath, ".vscode", "deska.py"))) {
+            return folder.uri.fsPath;
+        }
     }
-];
+    return null;
+}
+
+/** Příkaz pro Python podle systému (Windows: python, jinde python3). */
+function pythonCommand() {
+    return process.platform === "win32" ? "python" : "python3";
+}
+
+/**
+ * Výchozí tlačítka pro projekty s `.vscode/deska.py`, když v nastavení
+ * žádná nejsou (běžně je zapisuje `python .vscode/deska.py vscode`).
+ *
+ * Panel je rychlý přístup k ZÁKLADNÍM akcím – ostatní příkazy jsou
+ * v terminálu (mpy help, cpy help). Stejná sada je v deska.py (PANEL_BUTTONS).
+ */
+function deskaDefaultCommands() {
+    const py = pythonCommand();
+    const run = (args) => `${py} .vscode/deska.py ${args}`;
+    const mp = { group: "MicroPython", platform: "micropython" };
+    const cp = { group: "CircuitPython", platform: "circuitpython" };
+    return [
+        { id: "mpy-upload", name: "$(cloud-upload) MPY Upload", label: "⬆  Nahrát projekt", command: run("mpy upload"), color: "yellow", ...mp },
+        { id: "mpy-run", name: "$(play) MPY Run", label: "▶  Spustit main.py", command: run("mpy reset"), color: "lightgreen", statusBar: false, ...mp },
+        { id: "mpy-repl", name: "$(terminal) MPY REPL", label: "⌨  Konzole (REPL)", command: run("mpy repl"), color: "lightblue", ...mp },
+        {
+            id: "mpy-wipe", name: "$(trash) MPY Wipe", label: "🗑  Smazat desku", command: run("mpy wipe --yes"),
+            color: "red", statusBar: false, ...mp,
+            confirm: "Smazat VŠECHNY soubory na desce s MicroPythonem? Operace je nevratná.", confirmButton: "Smazat"
+        },
+        { id: "cpy-upload", name: "$(cloud-upload) CPY Upload", label: "⬆  Nahrát projekt", command: run("cpy upload"), color: "yellow", ...cp },
+        { id: "cpy-reset", name: "$(debug-restart) CPY Restart", label: "↻  Restartovat program", command: run("cpy reset"), color: "lightgreen", statusBar: false, ...cp },
+        { id: "cpy-repl", name: "$(terminal) CPY REPL", label: "⌨  Konzole (REPL)", command: run("cpy repl"), color: "lightblue", ...cp },
+        {
+            id: "cpy-wipe", name: "$(trash) CPY Wipe", label: "🗑  Smazat desku", command: run("cpy wipe --yes"),
+            color: "red", statusBar: false, ...cp,
+            confirm: "Smazat VŠECHNY soubory na disku CIRCUITPY? Operace je nevratná.", confirmButton: "Smazat"
+        }
+    ];
+}
 
 /**
  * Sanitizuje JSON řetězec tak, aby byl bezpečně parsovatelný.
@@ -179,15 +200,21 @@ function getSetting(settingName, out) {
     }
 
     // ------------------------------------------------------------
-    // 5) Automatický fallback na výchozí příkazy (out-of-the-box)
+    // 5) Automatický fallback na výchozí hodnoty (out-of-the-box)
+    //    pro projekty s .vscode/deska.py: tlačítka a seznam desek.
     // ------------------------------------------------------------
-    if (settingName === "commands") {
-        logger.info(out, "No custom commands configured → using built-in default commands");
-        return DEFAULT_COMMANDS;
+    const deskaProject = findDeskaProject();
+    if (settingName === "commands" && deskaProject) {
+        logger.info(out, "No custom commands configured → using built-in deska.py commands");
+        return deskaDefaultCommands();
+    }
+    if (settingName === "devicesCommand" && deskaProject) {
+        logger.info(out, "No devicesCommand configured → using deska.py devices --json");
+        return `${pythonCommand()} .vscode/deska.py devices --json`;
     }
 
     logger.warn(out, `No non-empty value found for '${settingName}'`);
     return undefined;
 }
 
-module.exports = { getSetting };
+module.exports = { getSetting, findDeskaProject };

@@ -1,8 +1,9 @@
 {
   "name": "micropython-panel",
-  "displayName": "MicroPython Panel",
+  "displayName": "MicroPython & CircuitPython Panel",
+  "description": "Tlačítka a panel pro práci s deskami s MicroPythonem a CircuitPythonem (nahrání, REPL, soubory, připojené desky).",
   "publisher": "JanChaloupek",
-  "version": "0.2.2",
+  "version": "0.3.1",
 
   "repository": {
     "type": "git",
@@ -19,23 +20,22 @@
     "workspaceContains:**/main.py",
     "workspaceContains:**/code.py",
     "workspaceContains:**/boot.py",
-    "workspaceContains:**/.vscode/upload.ps1",
-    "workspaceContains:**/.vscode/list.ps1",
-    "workspaceContains:**/.vscode/wipe.ps1",
-    "onCommand:micropython.openPanel",
-    "onCommand:micropython.showCommands",
-    "onView:micropython.sidebarPanel"
+    "workspaceContains:**/.vscode/deska.py"
   ],
 
   "contributes": {
     "commands": [
       {
         "command": "micropython.openPanel",
-        "title": "MicroPython: Open Panel"
+        "title": "MicroPython & CircuitPython: Open Panel"
       },
       {
         "command": "micropython.showCommands",
-        "title": "MicroPython: Commands"
+        "title": "MicroPython & CircuitPython: Commands"
+      },
+      {
+        "command": "micropython.refreshDevices",
+        "title": "MicroPython & CircuitPython: Refresh Devices"
       }
     ],
 
@@ -43,7 +43,7 @@
       "activitybar": [
         {
           "id": "micropython",
-          "title": "MicroPython",
+          "title": "MicroPython & CircuitPython",
           "icon": "media/micropython-icon.svg"
         }
       ]
@@ -54,30 +54,100 @@
         {
           "type": "webview",
           "id": "micropython.sidebarPanel",
-          "name": "Panel"
+          "name": "Panel",
+          "when": "micropython.boardProject"
         }
       ]
     },
 
+    "menus": {
+      "commandPalette": [
+        { "command": "micropython.openPanel", "when": "micropython.boardProject" },
+        { "command": "micropython.showCommands", "when": "micropython.boardProject" },
+        { "command": "micropython.refreshDevices", "when": "micropython.boardProject" }
+      ]
+    },
+
     "configuration": {
-      "title": "MicroPython Panel Settings",
+      "title": "MicroPython & CircuitPython Panel",
       "properties": {
         "micropython.enableStatusToolbar": {
           "type": "boolean",
           "default": true,
-          "description": "Enable MicroPython status bar toolbar"
+          "description": "Zobrazit tlačítka ve stavovém řádku (jen ta, která nemají statusBar: false)."
         },
 
         "micropython.autoOpenPanel": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically reopen the panel if it was open last time"
+          "description": "Po restartu VS Code znovu otevřít panel v editoru, pokud byl otevřený."
         },
 
         "micropython.commands": {
           "type": "array",
-          "description": "List of MicroPython toolbar commands",
-          "default": []
+          "description": "Tlačítka panelu a stavového řádku. Každé tlačítko spustí svůj příkaz v terminálu.",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "command"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Jedinečný identifikátor (bez mezer a diakritiky)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Text tlačítka ve stavovém řádku a v rychlém menu. Může obsahovat ikonu VS Code, např. $(play)."
+              },
+              "label": {
+                "type": "string",
+                "description": "Text tlačítka v panelu (výchozí = name)."
+              },
+              "command": {
+                "type": "string",
+                "description": "Příkaz, který se spustí v terminálu."
+              },
+              "color": {
+                "type": "string",
+                "description": "Barva textu a proužku tlačítka (název CSS barvy nebo #rrggbb)."
+              },
+              "group": {
+                "type": "string",
+                "description": "Blok v panelu (např. MicroPython, CircuitPython)."
+              },
+              "platform": {
+                "type": "string",
+                "enum": ["micropython", "circuitpython"],
+                "description": "Které desky blok ukazuje. Když žádná taková deska není připojená, blok se ztlumí."
+              },
+              "statusBar": {
+                "type": "boolean",
+                "default": true,
+                "description": "false = tlačítko jen v panelu, ne ve stavovém řádku."
+              },
+              "confirm": {
+                "type": "string",
+                "description": "Otázka v modálním dialogu před spuštěním (pro nevratné akce, např. smazání desky). Při zrušení se nic nespustí."
+              },
+              "confirmButton": {
+                "type": "string",
+                "description": "Text potvrzovacího tlačítka v dialogu (výchozí „Pokračovat“)."
+              }
+            }
+          }
+        },
+
+        "micropython.devicesCommand": {
+          "type": "string",
+          "default": "",
+          "description": "Příkaz, který vypíše připojené desky jako JSON (např. python .vscode/deska.py devices --json). Prázdný = v projektu s .vscode/deska.py se použije ten, jinak se seznam desek nezobrazí."
+        },
+
+        "micropython.devicesRefreshSeconds": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "description": "Jak často obnovovat seznam desek, když je panel vidět (v sekundách, 0 = jen ručně tlačítkem ↻)."
         }
       }
     }

@@ -27,6 +27,8 @@ function ensureTerminal() {
  *
  * Každý příkaz:
  *  - dostane vlastní ID: micropython.runCommand.<id>
+ *  - má-li pole `confirm`, nejdřív ukáže modální dialog s otázkou
+ *    (tlačítko `confirmButton`, výchozí „Pokračovat“); při zrušení nic nespustí
  *  - po spuštění otevře terminál
  *  - pošle do něj text příkazu
  *
@@ -59,7 +61,17 @@ function registerDynamicCommands(context, commands, out) {
         const id = `micropython.runCommand.${cmd.id}`;
 
         context.subscriptions.push(
-            vscode.commands.registerCommand(id, () => {
+            vscode.commands.registerCommand(id, async () => {
+                // Nevratné akce (např. smazání desky) se nejdřív potvrdí
+                if (cmd.confirm) {
+                    const button = cmd.confirmButton || "Pokračovat";
+                    const answer = await vscode.window.showWarningMessage(
+                        cmd.confirm, { modal: true }, button);
+                    if (answer !== button) {
+                        logger.info(out, `Cancelled by user: ${cmd.id}`);
+                        return;
+                    }
+                }
                 const t = ensureTerminal();
                 t.sendText(cmd.command);
                 logger.info(out, `Running command: ${cmd.command}`);
